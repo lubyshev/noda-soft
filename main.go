@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"sync"
 	"time"
 )
@@ -18,7 +19,7 @@ import (
 
 // A task represents a meaninglessness of our life
 type task struct {
-	id         int
+	id         string
 	cT         time.Time     // время создания
 	fT         time.Duration // время выполнения
 	taskRESULT []byte
@@ -37,7 +38,7 @@ func taskGenerator(ctx context.Context, wg *sync.WaitGroup, a chan task) {
 				if ft.Nanosecond()%2 > 0 { // вот такое условие появления ошибочных тасков
 					ft = time.Time{}
 				}
-				a <- task{cT: ft, id: int(ft.Unix())} // передаем таск на выполнение
+				a <- task{cT: ft, id: uuid.New().String()} // передаем таск на выполнение
 			} else {
 				time.Sleep(10_000)
 			}
@@ -67,7 +68,7 @@ func taskWorker(ctx context.Context, wg *sync.WaitGroup, tasks chan task, cb fun
 func main() {
 	var wg = new(sync.WaitGroup)
 	var ctx, cf = context.WithCancel(context.Background())
-	var superChan = make(chan task, 10)
+	var superChan = make(chan task, 6)
 
 	var doneTasks = make([]task, 0, 0)
 	var undoneTasks = make([]error, 0, 0)
